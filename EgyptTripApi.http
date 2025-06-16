@@ -1,0 +1,6 @@
+@EgyptTripApi_HostAddress = http://localhost:5251
+
+GET {{EgyptTripApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
