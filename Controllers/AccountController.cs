@@ -1,12 +1,7 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using EgyptTripApi.DTOs.AccountDTOs;
-using EgyptTripApi.Helpers;
-using EgyptTripApi.Models;
-using EgyptTripApi.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Models.DTOs.AccountDTOs;
+using Utility.Services;
 
 namespace EgyptTripApi.Controllers
 {

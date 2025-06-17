@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EgyptTripApi", "EgyptTripApi.csproj", "{04F9ABE1-AAB8-4387-9DBE-215205196929}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api.csproj", "{04F9ABE1-AAB8-4387-9DBE-215205196929}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "..\DataAccess\DataAccess.csproj", "{5549A002-6698-4CCC-B70C-742174D527E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "..\Models\Models.csproj", "{9FF4061A-BE8C-4AC2-BBD7-E0EB4866109B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "..\Utility\Utility.csproj", "{C09B84D3-C0AD-429D-8578-A0A397D4B720}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{04F9ABE1-AAB8-4387-9DBE-215205196929}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04F9ABE1-AAB8-4387-9DBE-215205196929}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04F9ABE1-AAB8-4387-9DBE-215205196929}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5549A002-6698-4CCC-B70C-742174D527E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5549A002-6698-4CCC-B70C-742174D527E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5549A002-6698-4CCC-B70C-742174D527E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5549A002-6698-4CCC-B70C-742174D527E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FF4061A-BE8C-4AC2-BBD7-E0EB4866109B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FF4061A-BE8C-4AC2-BBD7-E0EB4866109B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FF4061A-BE8C-4AC2-BBD7-E0EB4866109B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FF4061A-BE8C-4AC2-BBD7-E0EB4866109B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C09B84D3-C0AD-429D-8578-A0A397D4B720}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C09B84D3-C0AD-429D-8578-A0A397D4B720}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C09B84D3-C0AD-429D-8578-A0A397D4B720}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C09B84D3-C0AD-429D-8578-A0A397D4B720}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

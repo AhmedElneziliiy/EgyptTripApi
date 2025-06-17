@@ -1,0 +1,11 @@
+1 - Modify Structure to use N-Tier Architecture. :#########done
+
+2 - Use Auto mapper for easy mapping between DTOs and entities. ########done
+
+3 - Data Seeding into all tables. ########done
+
+4 - Implement error handling middleware to catch exceptions globally.
+5 - Create Postman collections for testing all endpoints.
+6 - deploy project on any platform.
+7 - Implement Repostory Pattern (unite of work optional). 
+8 - Implement pagination for all GET requests that return lists.

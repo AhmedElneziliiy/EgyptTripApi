@@ -1,7 +1,0 @@
-1 - Use Auto mapper for easy mapping between DTOs and entities.
-2 - Data Seeding into all tables
-3 - Implement pagination for all GET requests that return lists.
-4 - Implement caching for frequently accessed data.
-5 - Implement error handling middleware to catch exceptions globally.
-6 - Create Postman collections for testing all endpoints.
-7 - deploy project on any platform

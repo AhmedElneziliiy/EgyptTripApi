@@ -1,13 +1,16 @@
 using System.Text;
-using EgyptTripApi.Context;
-using EgyptTripApi.Helpers;
-using EgyptTripApi.Models;
-using EgyptTripApi.Services;
+using DataAccess.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using static EgyptTripApi.Helpers.Roles;
+using Models.Configurations;
+using Models.Entities;
+using Utility.Services;
+using static Models.Enums.Roles;
+//using static EgyptTripApi.Helpers.Roles;
+using Utility.Profiles;
+using Api.Seeders;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +38,12 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
 // Register the AuthService
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// Register DatabaseSeeder
+builder.Services.AddScoped<DatabaseSeeder>();
+
+// Register AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 // Configure Authentication using JWT authentication Defaults like bearer token
 builder.Services.AddAuthentication(options =>
 {
@@ -56,6 +65,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -72,19 +83,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//// Seed roles
+// Seed database
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-    string[] roleNames = { Role.Tourist.ToString(), Role.TourGuide.ToString(), Role.Hotel.ToString(), Role.TourismCompany.ToString(), Role.Admin.ToString() };
-
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new ApplicationRole(roleName));
-        }
-    }
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedAsync();
 }
+
 Console.WriteLine(Role.TourGuide.ToString());
 app.Run();
