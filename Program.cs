@@ -8,9 +8,11 @@ using Models.Configurations;
 using Models.Entities;
 using Utility.Services;
 using static Models.Enums.Roles;
-//using static EgyptTripApi.Helpers.Roles;
 using Utility.Profiles;
 using Api.Seeders;
+using Utility.Services.IService;
+using DataAccess.Repository.IRepository;
+using DataAccess.Repository;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +39,10 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
 
 // Register the AuthService
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Register BookingService and Repository
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 // Register DatabaseSeeder
 builder.Services.AddScoped<DatabaseSeeder>();

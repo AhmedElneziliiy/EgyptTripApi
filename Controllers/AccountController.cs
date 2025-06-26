@@ -1,7 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs.AccountDTOs;
-using Utility.Services;
+using Utility.Services.IService;
 
 namespace EgyptTripApi.Controllers
 {
@@ -55,7 +55,7 @@ namespace EgyptTripApi.Controllers
         [HttpPost("register/admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminDto model)
         {
-            // TODO: Restrict access (e.g., API key or Admin role)
+            // TODO: Restrict access to admin roles only
             var response = await _authService.RegisterAdminAsync(model);
             if (!response.Success)
                 return BadRequest(new { response.Errors });
@@ -70,6 +70,7 @@ namespace EgyptTripApi.Controllers
                 return Unauthorized(new { response.Message });
             return Ok(new { response.Token, response.Message });
         }
+
     }
 }
        

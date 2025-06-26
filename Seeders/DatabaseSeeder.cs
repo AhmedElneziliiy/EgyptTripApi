@@ -28,13 +28,8 @@ namespace Api.Seeders
 
         public async Task SeedAsync()
         {
-            if (await _roleManager.Roles.AnyAsync() || await _userManager.Users.AnyAsync())
-            {
-                return; 
-            }
-
             // Seed Roles
-            string[] roleNames = { Role.Tourist.ToString(), Role.TourGuide.ToString(), Role.Hotel.ToString(), Role.TourismCompany.ToString(), Role.Admin.ToString() };
+            string[] roleNames = { Role.Tourist.ToString(), Role.TourGuide.ToString(), Role.TourismCompany.ToString(), Role.Hotel.ToString() };
             foreach (var roleName in roleNames)
             {
                 if (!await _roleManager.RoleExistsAsync(roleName))
@@ -43,40 +38,61 @@ namespace Api.Seeders
                 }
             }
 
-            // Seed Tourist
-            var tourist = new ApplicationUser
+            // Update passwords for existing users
+            var existingUsers = await _userManager.Users.ToListAsync();
+            foreach (var user in existingUsers)
             {
-                Id = Guid.NewGuid().ToString(),
-                FirstName = "Alice",
-                LastName = "Smith",
-                UserName = "alicesmith",
-                Email = "alice.smith@example.com",
-                PhoneNumber = "1234567890",
-                Address = "123 Cairo St, Giza",
-                Preferences = "History, Adventure",
-                FavoriteDestinations = "Pyramids, Luxor"
-            };
-            var touristResult = await _userManager.CreateAsync(tourist, "P@ss123");
-            if (touristResult.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(tourist, Role.Tourist.ToString());
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, "P@ss123");
+                if (!result.Succeeded)
+                {
+                    throw new Exception($"Failed to reset password for user {user.Email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
             }
 
-            // Seed TourGuide
-            var tourGuideUser = new ApplicationUser
+            // Seed minimal users if they don't exist
+            async Task<ApplicationUser> CreateUserIfNotExists(string email, string firstName, string lastName, string role, string address, string phoneNumber)
             {
-                Id = Guid.NewGuid().ToString(),
-                FirstName = "Mohamed",
-                LastName = "Hassan",
-                UserName = "mohamedhassan",
-                Email = "mohamed.hassan@example.com",
-                PhoneNumber = "9876543210",
-                Address = "456 Nile Rd, Cairo"
-            };
-            var tourGuideResult = await _userManager.CreateAsync(tourGuideUser, "P@ss123");
-            if (tourGuideResult.Succeeded)
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    user = new ApplicationUser
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        FirstName = firstName,
+                        LastName = lastName,
+                        UserName = (firstName + lastName).ToLower(),
+                        Email = email,
+                        PhoneNumber = phoneNumber,
+                        Address = address
+                    };
+                    var result = await _userManager.CreateAsync(user, "P@ss123");
+                    if (!result.Succeeded)
+                        throw new Exception($"Failed to create user {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    await _userManager.AddToRoleAsync(user, role);
+                }
+                return user;
+            }
+
+            var tourist = await CreateUserIfNotExists(
+                "alice.smith@example.com", "Alice", "Smith", Role.Tourist.ToString(),
+                "123 Cairo St, Giza", "1234567890");
+
+            var tourGuideUser = await CreateUserIfNotExists(
+                "mohamed.hassan@example.com", "Mohamed", "Hassan", Role.TourGuide.ToString(),
+                "456 Nile Rd, Cairo", "9876543210");
+
+            var companyUser = await CreateUserIfNotExists(
+                "khaled.mahmoud@example.com", "Khaled", "Mahmoud", Role.TourismCompany.ToString(),
+                "101 Nile St, Cairo", "1112223333");
+
+            var hotelUser = await CreateUserIfNotExists(
+                "sara.ahmed@example.com", "Sara", "Ahmed", Role.Hotel.ToString(),
+                "789 Sphinx Ave, Giza", "5556667777");
+
+            // Seed TourGuide if not exists
+            if (!await _context.TourGuides.AnyAsync(tg => tg.UserID == tourGuideUser.Id))
             {
-                await _userManager.AddToRoleAsync(tourGuideUser, Role.TourGuide.ToString());
                 var tourGuide = new TourGuide
                 {
                     GuideID = Guid.NewGuid().ToString(),
@@ -90,25 +106,28 @@ namespace Api.Seeders
                     ContactPhone = "9876543210"
                 };
                 _context.TourGuides.Add(tourGuide);
-                await _context.SaveChangesAsync();
             }
 
-            // Seed Hotel
-            var hotelUser = new ApplicationUser
+            // Seed TourismCompany if not exists
+            if (!await _context.TourismCompanies.AnyAsync(c => c.UserID == companyUser.Id))
             {
-                Id = Guid.NewGuid().ToString(),
-                FirstName = "Sara",
-                LastName = "Ahmed",
-                UserName = "saraahmed",
-                Email = "sara.ahmed@example.com",
-                PhoneNumber = "5556667777",
-                Address = "789 Sphinx Ave, Giza"
-            };
-            var hotelResult = await _userManager.CreateAsync(hotelUser, "P@ss123");
-            if (hotelResult.Succeeded)
+                var tourismCompany = new TourismCompany
+                {
+                    CompanyID = Guid.NewGuid().ToString(),
+                    UserID = companyUser.Id,
+                    CompanyName = "Egypt Adventures",
+                    LicenseNumber = "TC789012",
+                    Description = "Leading tourism company for cultural tours",
+                    ContactEmail = "info@egyptadventures.com",
+                    ContactPhone = "1112223333"
+                };
+                _context.TourismCompanies.Add(tourismCompany);
+            }
+
+            // Seed Hotel if not exists
+            if (!await _context.Hotels.AnyAsync(h => h.UserID == hotelUser.Id))
             {
-                await _userManager.AddToRoleAsync(hotelUser, Role.Hotel.ToString());
-                var hotel = new Hotel
+                var hotel1 = new Hotel
                 {
                     HotelID = Guid.NewGuid().ToString(),
                     UserID = hotelUser.Id,
@@ -119,103 +138,84 @@ namespace Api.Seeders
                     ContactEmail = "contact@pyramidview.com",
                     ContactPhone = "5556667777"
                 };
-                _context.Hotels.Add(hotel);
-                await _context.SaveChangesAsync();
+                _context.Hotels.Add(hotel1);
             }
 
-            // Seed TourismCompany
-            var companyUser = new ApplicationUser
+            await _context.SaveChangesAsync();
+
+            // Seed Rooms (table is empty)
+            var hotel = await _context.Hotels.FirstOrDefaultAsync(h => h.UserID == hotelUser.Id);
+            if (hotel != null && !await _context.Rooms.AnyAsync())
             {
-                Id = Guid.NewGuid().ToString(),
-                FirstName = "Khaled",
-                LastName = "Mahmoud",
-                UserName = "khaledmahmoud",
-                Email = "khaled.mahmoud@example.com",
-                PhoneNumber = "1112223333",
-                Address = "101 Nile St, Cairo"
-            };
-            var companyResult = await _userManager.CreateAsync(companyUser, "P@ss123");
-            if (companyResult.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(companyUser, Role.TourismCompany.ToString());
-                var company = new TourismCompany
+                var room = new Room
                 {
-                    CompanyID = Guid.NewGuid().ToString(),
-                    UserID = companyUser.Id,
-                    CompanyName = "Egypt Adventures",
-                    LicenseNumber = "TC789012",
-                    Description = "Leading tourism company for cultural tours",
-                    ContactEmail = "info@egyptadventures.com",
-                    ContactPhone = "1112223333"
+                    RoomID = Guid.NewGuid().ToString(),
+                    HotelID = hotel.HotelID,
+                    RoomType = "Deluxe",
+                    PricePerNight = 100.00m,
+                    IsAvailable = true
                 };
-                _context.TourismCompanies.Add(company);
-                await _context.SaveChangesAsync();
+                _context.Rooms.Add(room);
             }
 
-            // Seed Admin
-            var admin = new ApplicationUser
+            // Seed TourPackages (table is empty)
+            var company = await _context.TourismCompanies.FirstOrDefaultAsync(c => c.UserID == companyUser.Id);
+            if (company != null && !await _context.TourPackages.AnyAsync())
             {
-                Id = Guid.NewGuid().ToString(),
-                FirstName = "Admin",
-                LastName = "User",
-                UserName = "adminuser",
-                Email = "admin@example.com",
-                PhoneNumber = "9998887777",
-                Address = "500 Admin Rd, Cairo"
-            };
-            var adminResult = await _userManager.CreateAsync(admin, "P@ss123");
-            if (adminResult.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(admin, Role.Admin.ToString());
-            }
-
-            // Additional Tourist
-            var tourist2 = new ApplicationUser
-            {
-                Id = Guid.NewGuid().ToString(),
-                FirstName = "Bob",
-                LastName = "Johnson",
-                UserName = "bobjohnson",
-                Email = "bob.johnson@example.com",
-                PhoneNumber = "4445556666",
-                Address = "321 Luxor St, Luxor",
-                Preferences = "Culture, Food",
-                FavoriteDestinations = "Aswan, Alexandria"
-            };
-            var tourist2Result = await _userManager.CreateAsync(tourist2, "P@ss123");
-            if (tourist2Result.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(tourist2, Role.Tourist.ToString());
-            }
-
-            // Additional TourGuide
-            var tourGuide2User = new ApplicationUser
-            {
-                Id = Guid.NewGuid().ToString(),
-                FirstName = "Fatima",
-                LastName = "Ali",
-                UserName = "fatimaali",
-                Email = "fatima.ali@example.com",
-                PhoneNumber = "3334445555",
-                Address = "654 Aswan Rd, Aswan"
-            };
-            var tourGuide2Result = await _userManager.CreateAsync(tourGuide2User, "P@ss123");
-            if (tourGuide2Result.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(tourGuide2User, Role.TourGuide.ToString());
-                var tourGuide2 = new TourGuide
+                var tourPackage = new TourPackage
                 {
-                    GuideID = Guid.NewGuid().ToString(),
-                    UserID = tourGuide2User.Id,
-                    GuideName = "Fatima The Historian",
-                    LicenseNumber = "TG789012",
-                    Languages = "English, Arabic, Spanish",
-                    AreasCovered = "Aswan, Abu Simbel",
-                    PricePerHour = 45.00m,
-                    ContactEmail = "fatima.guide@example.com",
-                    ContactPhone = "3334445555"
+                    PackageID = Guid.NewGuid().ToString(),
+                    CompanyID = company.CompanyID,
+                    PackageName = "Luxor Cultural Tour",
+                    Description = "3-day tour of Luxor temples",
+                    Price = 300.00m,
+                    DurationDays = 3,
+                    StartDate = DateTime.UtcNow.AddDays(5),
+                    EndDate = DateTime.UtcNow.AddDays(8)
                 };
-                _context.TourGuides.Add(tourGuide2);
+                _context.TourPackages.Add(tourPackage);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Seed Bookings (table is empty)
+            if (!await _context.Bookings.AnyAsync())
+            {
+                var tourGuide = await _context.TourGuides.FirstOrDefaultAsync(tg => tg.UserID == tourGuideUser.Id);
+                var tourPackage = company != null
+                    ? await _context.TourPackages.FirstOrDefaultAsync(p => p.CompanyID == company.CompanyID)
+                    : null;
+                var room = hotel != null
+                    ? await _context.Rooms.FirstOrDefaultAsync(r => r.HotelID == hotel.HotelID)
+                    : null;
+
+                var booking1 = new Booking
+                {
+                    BookingID = Guid.NewGuid().ToString(),
+                    UserID = tourist.Id,
+                    GuideID = tourGuide != null ? tourGuide.GuideID : null,
+                    BookingDate = DateTime.UtcNow.AddDays(7),
+                    TotalPrice = 100.00m,
+                    Status = "Pending"
+                };
+                _context.Bookings.Add(booking1);
+
+                if (tourPackage != null)
+                {
+                    var booking2 = new Booking
+                    {
+                        BookingID = Guid.NewGuid().ToString(),
+                        UserID = tourist.Id,
+                        PackageID = tourPackage.PackageID,
+                        HotelID = hotel != null ? hotel.HotelID : null,
+                        RoomID = room != null ? room.RoomID : null,
+                        BookingDate = tourPackage.StartDate.AddDays(1),
+                        TotalPrice = 400.00m, // Includes package + room
+                        Status = "Pending"
+                    };
+                    _context.Bookings.Add(booking2);
+                }
+
                 await _context.SaveChangesAsync();
             }
         }
