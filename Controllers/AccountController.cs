@@ -20,8 +20,13 @@ namespace EgyptTripApi.Controllers
         public async Task<IActionResult> RegisterTourist([FromBody] RegisterTouristDto model)
         {
             var response = await _authService.RegisterTouristAsync(model);
-            if (!response.Success)
-                return BadRequest(new { response.Errors });
+           
+            if (!response.Success && response.Message is null)
+                return BadRequest(new { response.Errors});
+            
+            if(response.Message is not null && response.Success == false)
+                return BadRequest(new { response.Message });
+
             return Ok(new { response.Token, response.Message });
         }
 
@@ -29,8 +34,12 @@ namespace EgyptTripApi.Controllers
         public async Task<IActionResult> RegisterTourGuide([FromBody] RegisterTourGuideDto model)
         {
             var response = await _authService.RegisterTourGuideAsync(model);
-            if (!response.Success)
+            if (!response.Success && response.Message is null)
                 return BadRequest(new { response.Errors });
+
+            if (response.Message is not null && response.Success == false)
+                return BadRequest(new { response.Message });
+
             return Ok(new { response.Token, response.Message });
         }
 
@@ -38,8 +47,13 @@ namespace EgyptTripApi.Controllers
         public async Task<IActionResult> RegisterHotel([FromBody] RegisterHotelDto model)
         {
             var response = await _authService.RegisterHotelAsync(model);
-            if (!response.Success)
+           
+            if (!response.Success && response.Message is null)
                 return BadRequest(new { response.Errors });
+
+            if (response.Message is not null && response.Success == false)
+                return BadRequest(new { response.Message });
+
             return Ok(new { response.Token, response.Message });
         }
 
@@ -47,8 +61,13 @@ namespace EgyptTripApi.Controllers
         public async Task<IActionResult> RegisterTourismCompany([FromBody] RegisterTourismCompanyDto model)
         {
             var response = await _authService.RegisterTourismCompanyAsync(model);
-            if (!response.Success)
+            
+            if (!response.Success && response.Message is null)
                 return BadRequest(new { response.Errors });
+
+            if (response.Message is not null && response.Success == false)
+                return BadRequest(new { response.Message });
+
             return Ok(new { response.Token, response.Message });
         }
 
@@ -57,8 +76,13 @@ namespace EgyptTripApi.Controllers
         {
             // TODO: Restrict access to admin roles only
             var response = await _authService.RegisterAdminAsync(model);
-            if (!response.Success)
+            
+            if (!response.Success && response.Message is null)
                 return BadRequest(new { response.Errors });
+
+            if (response.Message is not null && response.Success == false)
+                return BadRequest(new { response.Message });
+
             return Ok(new { response.Token, response.Message });
         }
 

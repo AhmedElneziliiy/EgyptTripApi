@@ -13,6 +13,7 @@ using Api.Seeders;
 using Utility.Services.IService;
 using DataAccess.Repository.IRepository;
 using DataAccess.Repository;
+using Microsoft.AspNetCore.Builder;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +40,7 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
 
 // Register the AuthService
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IHotelService, HotelService>();
 
 // Register BookingService and Repository
 builder.Services.AddScoped<IBookingService, BookingService>();
@@ -71,16 +73,28 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Any",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+
+        });
+});
+
 
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
+app.UseCors("Any");
 
 app.UseHttpsRedirection();
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace EgyptTripApi.Controllers
 {
@@ -7,7 +6,7 @@ namespace EgyptTripApi.Controllers
     [ApiController]
     public class testController : ControllerBase
     {
-        [Authorize(Roles = "Tourist")]
+        //[Authorize(Roles = "Tourist")]
         [HttpGet]
         public IActionResult Get()
         {
